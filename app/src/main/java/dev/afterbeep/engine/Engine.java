@@ -143,7 +143,7 @@ public final class Engine {
         boolean silence = cfg.optBoolean("silenceLocal", true);
         Object origVol = null;
         long startedAt = System.currentTimeMillis();
-        double[] result = {0, 0}; // seconds, peak dBFS
+        double[] result = {0, 0, 0}; // seconds, peak dBFS, caller spoke (1/0)
 
         state = "answering";
         call(telecom, "acceptRingingCall");
@@ -169,13 +169,15 @@ public final class Engine {
             beep();
 
             state = "recording";
-            result = record(part, maxSecs);
+            result = record(part, maxSecs, new SilenceGate(cfg.optDouble("silenceDb", -45),
+                    cfg.optInt("silenceSeconds", 10) * 1000L, cfg.optInt("noSpeechSeconds", 10) * 1000L));
         } finally {
             if (Boolean.TRUE.equals(call(telecom, "isInCall"))) { call(telecom, "endCall"); log("endCall"); }
             restoreAudio(origVol, silence ? 1 : 0);
             state = "idle";
         }
 
+        if (result[2] == 0) { log("caller never spoke -> discarded"); part.delete(); return; }
         if (result[0] < 1.0) { log("message too short (" + result[0] + "s) -> discarded"); part.delete(); return; }
         finishWav(part, 16000);
         if (!part.renameTo(wav)) log("rename failed");
@@ -254,7 +256,8 @@ public final class Engine {
         playGreeting(f);
     }
 
-    static double[] record(File out, int maxSecs) throws Exception {
+    /** Records the caller until hang-up, [maxSecs], or [gate] hears silence. Returns {seconds, peak dBFS, spoke 1/0}. */
+    static double[] record(File out, int maxSecs, SilenceGate gate) throws Exception {
         int rate = 16000;
         int min = AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         AudioRecord rec = new AudioRecord.Builder()
@@ -277,6 +280,8 @@ public final class Engine {
                 o.write(buf, 0, n);
                 bytes += n;
                 for (int i = 0; i + 1 < n; i += 2) peak = Math.max(peak, Math.abs((short) ((buf[i] & 0xff) | (buf[i + 1] << 8))));
+                String quiet = gate.feed(buf, n);
+                if (quiet != null) { log(quiet + " -> hang up"); break; }
                 long now = System.currentTimeMillis();
                 if (now - lastCheck > 400) {
                     lastCheck = now;
@@ -286,7 +291,11 @@ public final class Engine {
         }
         rec.stop();
         rec.release();
-        return new double[]{bytes / (2.0 * rate), 20 * Math.log10(Math.max(peak, 1) / 32768.0)};
+        // Cut the trailing dead air off the file.
+        long keep = gate.keepBytes();
+        if (keep < bytes) try (RandomAccessFile raf = new RandomAccessFile(out, "rw")) { raf.setLength(44 + keep); bytes = keep; }
+        log(String.format(Locale.US, "silence floor=%.1fdB spoke=%b", gate.floorDb(), gate.spoke()));
+        return new double[]{bytes / (2.0 * rate), 20 * Math.log10(Math.max(peak, 1) / 32768.0), gate.spoke() ? 1 : 0};
     }
 
     /** Lets AudioRecord attribute the capture to com.android.shell (uid 2000). */

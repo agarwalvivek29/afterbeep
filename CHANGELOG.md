@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Silent callers: Afterbeep hangs up when nobody speaks for 10 s after the beep (robocalls, pocket dials)
+  and saves nothing. A message also ends 10 s after the caller stops speaking, with the silence cut off.
+
 ## 1.0.0 — 2026-11-21
 
 First public release.

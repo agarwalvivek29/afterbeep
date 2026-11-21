@@ -124,7 +124,7 @@ Then record a greeting in the **Greeting** tab and do a test call from another p
 |---|---|---|
 | **Take messages** | On | Pause voicemail without stopping the engine — calls just ring normally |
 | **Answer after** | 15 s (3–40) | How long the phone rings before Afterbeep picks up. Long enough to grab the phone, short enough that callers don't give up. If you use carrier forwarding as a backup, keep this **shorter** than the carrier's no-answer timer |
-| **Longest message** | 2:00 (0:30–5:00) | Caps recording length so a pocket-dial can't fill your storage |
+| **Longest message** | 2:00 (0:30–5:00) | Caps recording length so a pocket-dial can't fill your storage. Afterbeep also hangs up early when the line goes quiet: after 10 s with no speech from the beep (nothing is saved), or 10 s after the caller stops speaking (the silence is cut from the message) |
 
 ### Privacy
 | Setting | Default | Why |
