@@ -136,6 +136,7 @@ class EngineController(private val app: AfterbeepApp) {
                 .put("maxSeconds", s.maxSeconds)
                 .put("silenceLocal", s.silenceLocal)
                 .put("lockDebugging", s.lockDebugging)
+                .put("repeatRingThrough", s.repeatRingThrough)
                 .put("ringThrough", JSONArray(if (s.starredRingThrough) repo.starredNumbers() else emptyList()))
             val f = File(repo.dataDir, "config.json")
             val tmp = File(repo.dataDir, "config.json.tmp")

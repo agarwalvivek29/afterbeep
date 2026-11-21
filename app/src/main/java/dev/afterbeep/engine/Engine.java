@@ -118,12 +118,22 @@ public final class Engine {
 
     // ------------------------------------------------------------------ call handling
 
+    static final RepeatCallers REPEATS = new RepeatCallers();
+
     static void onRing() throws Exception {
         JSONObject cfg = readConfig();
         String number = incomingNumber();
         log("ringing from " + mask(number));
+        try { handleRing(cfg, number); }
+        finally { REPEATS.remember(number, System.currentTimeMillis()); }
+    }
+
+    static void handleRing(JSONObject cfg, String number) throws Exception {
         if (!cfg.optBoolean("enabled", true)) { log("disabled -> let it ring"); return; }
         if (isSkipped(cfg, number)) { log("number on ring-through list -> let it ring"); return; }
+        if (cfg.optBoolean("repeatRingThrough", true) && REPEATS.isRecent(number, System.currentTimeMillis())) {
+            log("same number called again within 3 min -> let it ring"); return;
+        }
 
         state = "ringing";
         long waitMs = Math.max(1, cfg.optInt("ringSeconds", 15)) * 1000L;
@@ -313,15 +323,10 @@ public final class Engine {
         if (number == null || number.isEmpty()) return false;
         JSONArray arr = cfg.optJSONArray("ringThrough");
         if (arr == null) return false;
-        String n = digitsTail(number);
+        String n = RepeatCallers.digitsTail(number);
         Set<String> set = new HashSet<>();
-        for (int i = 0; i < arr.length(); i++) set.add(digitsTail(arr.optString(i)));
+        for (int i = 0; i < arr.length(); i++) set.add(RepeatCallers.digitsTail(arr.optString(i)));
         return set.contains(n);
-    }
-
-    static String digitsTail(String s) {
-        String d = s.replaceAll("[^0-9]", "");
-        return d.length() > 10 ? d.substring(d.length() - 10) : d;
     }
 
     /** Incoming number from the telephony registry (shell can read it). */

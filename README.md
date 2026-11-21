@@ -131,6 +131,7 @@ Then record a greeting in the **Greeting** tab and do a test call from another p
 |---|---|---|
 | **Silent on this phone** | On | Mutes the call on *your* side while Afterbeep talks to the caller, so people around you never hear them. (Your microphone is **always** muted during a message — that isn't optional.) |
 | **Favourites ring through** | Off | Starred contacts are never sent to voicemail — they keep ringing until you answer or they hang up |
+| **Repeat callers ring through** | On | Someone calling twice in a row is usually urgent: if the same number calls again within 3 minutes of their last call, it rings normally instead of going to voicemail (like iPhone's "Repeated calls"). Hidden numbers never count |
 
 ### Alerts
 | Setting | Why |

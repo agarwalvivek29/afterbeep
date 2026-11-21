@@ -151,6 +151,10 @@ fun SettingsScreen(vm: MainViewModel) {
                     contactsPerm.launch(Manifest.permission.READ_CONTACTS)
                 } else vm.updateSettings { it.copy(starredRingThrough = v) }
             }
+            Divider()
+            ToggleRow("Repeat callers ring through", "If the same number calls again within 3 minutes, it rings — it's probably urgent", s.repeatRingThrough) { v ->
+                vm.updateSettings { it.copy(repeatRingThrough = v) }
+            }
         }
 
         SectionLabel("Alerts")

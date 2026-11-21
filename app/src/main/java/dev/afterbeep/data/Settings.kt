@@ -11,6 +11,8 @@ data class AppSettings(
     val maxSeconds: Int = 120,
     val silenceLocal: Boolean = true,
     val starredRingThrough: Boolean = false,
+    /** A second call from the same number within 3 minutes rings normally (probably urgent). */
+    val repeatRingThrough: Boolean = true,
     val autoStart: Boolean = true,
     val paired: Boolean = false,
     val onboarded: Boolean = false,
@@ -38,6 +40,7 @@ class SettingsStore(ctx: Context) {
         maxSeconds = prefs.getInt("maxSeconds", 120),
         silenceLocal = prefs.getBoolean("silenceLocal", true),
         starredRingThrough = prefs.getBoolean("starredRingThrough", false),
+        repeatRingThrough = prefs.getBoolean("repeatRingThrough", true),
         autoStart = prefs.getBoolean("autoStart", true),
         paired = prefs.getBoolean("paired", false),
         onboarded = prefs.getBoolean("onboarded", false),
@@ -55,6 +58,7 @@ class SettingsStore(ctx: Context) {
             .putInt("maxSeconds", s.maxSeconds)
             .putBoolean("silenceLocal", s.silenceLocal)
             .putBoolean("starredRingThrough", s.starredRingThrough)
+            .putBoolean("repeatRingThrough", s.repeatRingThrough)
             .putBoolean("autoStart", s.autoStart)
             .putBoolean("paired", s.paired)
             .putBoolean("onboarded", s.onboarded)

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Repeat callers ring through: if the same number calls again within 3 minutes of their last call, the
+  phone rings instead of going to voicemail. On by default (Settings → Privacy).
+
 ## 1.0.0 — 2026-11-21
 
 First public release.
